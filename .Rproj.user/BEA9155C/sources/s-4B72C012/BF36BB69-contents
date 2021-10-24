@@ -1,0 +1,152 @@
+##################################
+### solucoes usando o R padrao ###
+##################################
+
+# 1) Leia o arquivo *diamonds.csv* na memória do *R*. Verifique se seu arquivo tem 53940 linhas e 10 colunas. Rode o comando
+#
+# diamonds$cut <- factor(diamonds$cut, levels = c("Fair", "Good", "Very Good",  "Premium", "Ideal"))
+#
+# para transformar a variável *cut* numa variável qualitativa ordinal.
+
+diamonds <- read.csv(file = "diamonds.csv", header = TRUE)
+dim(diamonds)
+head(diamonds)
+
+diamonds$cut <- factor(diamonds$cut, levels = c("Fair", "Good", "Very Good",  "Premium", "Ideal"))
+
+# 2) Crie duas tabelas com a função *aggregate*, encontrando os preços médio e mediano dos diamantes de acordo com o tipo de corte. O que esta tabela nos sugere? Há algo contra-intuitivo nela?
+
+aggregate(diamonds$price, list(diamonds$cut), mean)
+aggregate(diamonds$price, list(diamonds$cut), median)
+
+# 3) Vamos investigar melhor esta relação entre preço e tipo de corte. Primeiro, crie a variável qualitativa quilates, através do comando
+#
+# quilates <- cut(diamonds$carat, c(0, 1, 2, 3, 4, 6))
+#
+# Faça o boxplot do preço dos diamantes separados por intervalo de quilates. Que tendências são possíveis perceber neste gráfico?
+
+diamonds$quilates <- cut(diamonds$carat, c(0, 1, 2, 3, 4, 6))
+boxplot(diamonds$price ~ diamonds$quilates, main = "Preço dos Diamantes de Acordo com seu \nTamanho em Quilates")
+
+# 4) Crie uma tabela de dupla entrada relacionando a nova variável *quilates* e a variável *cut*. Comente o resultado obtido (não descreva o resultado numérico da tabela, mas sim um resultado qualitativo sobre ela, juntando informações sobre a qualidade do corte do diamante e seu tamanho).
+
+table(diamonds$quilates, diamonds$cut)
+
+# 5) Faça um boxplot separando o preço dos diamantes de acordo com seus níveis de transparência. É possível concluir que diamantes  com transparências melhores são mais caros? Justifique.
+
+boxplot(diamonds$price ~ diamonds$clarity, xlab = "Transparência", ylab = "Preço (US$)", main = "Preço do Diamante de acordo com sua Transparência")
+
+# 6) Faça um gráfico de dispersão do preço versus o tamanho do diamante (i.e., coloque o preço no eixo y). O que este gráfico nos sugere?
+
+plot(diamonds$price ~ diamonds$carat, xlab = "Tamanho (quilates)", ylab = "Preço (US$)", main = "Preço versus Tamanho de Diamantes")
+abline(v = 2, col = "red")
+
+# 7) Utilize o parâmetro *col = rgb(0, 0, 0, 0.1)* no comando anterior para melhorar a visualização dos dados. Que padrão é possível detectar nos dados? Qual seria uma possível explicação para isto?
+
+plot(diamonds$price ~ diamonds$carat, xlab = "Tamanho (quilates)", ylab = "Preço (US$)", main = "Preço versus Tamanho de Diamantes", col = rgb(0, 0, 0, 0.1))
+
+# 8) Vamos tentar melhorar o gráfico ainda mais. Pinte cada ponto do gráfico de uma cor diferente, de acordo com a coluna *color* do banco de dados. O que é possível perceber agora?
+#
+# Dica: utilize a função *as.numeric* e o argumento *pch = 16* para resolver este exercício.
+
+plot(diamonds$price ~ diamonds$carat, xlab = "Tamanho (quilates)", ylab = "Preço (US$)", main = "Preço versus Tamanho de Diamantes",col = as.numeric(diamonds$color), pch = 16)
+
+# 9) Adicione uma legenda ao gráfico do item anterior, identificando cada cor plotada, de acordo com a convenção adotada no banco de dados.
+
+plot(diamonds$price ~ diamonds$carat, xlab = "Tamanho (quilates)", ylab = "Preço (US$)", main = "Preço versus Tamanho de Diamantes", col = as.numeric(diamonds$color), pch = 16)
+legend("bottomright", legend = levels(diamonds$color), col = 1:7, pch = 16)
+
+# 10) Refaça o gráfico acima utilizando *cut* em vez de *color* para colorir os pontos do gráfico. O que é possível perceber?
+
+plot(diamonds$price ~ diamonds$carat, xlab = "Tamanho (quilates)", ylab = "Preço (US$)", main = "Preço versus Tipo de Corte de Diamantes", col = as.numeric(diamonds$cut), pch = 16)
+legend("bottomright", legend = levels(diamonds$cut), col = 1:5, pch = 16)
+
+
+
+
+#################################
+### solucoes usando tidyverse ###
+#################################
+
+library(tidyverse)
+theme_set(theme_bw())
+
+# 1) Leia o arquivo *diamonds.csv* na memória do *R*. Verifique se seu arquivo tem 53940 linhas e 10 colunas. Rode o comando
+#
+# diamonds$cut <- factor(diamonds$cut, levels = c("Fair", "Good", "Very Good",  "Premium", "Ideal"))
+#
+# para transformar a variável *cut* numa variável qualitativa ordinal.
+
+diamonds <- read.csv(file = "diamonds.csv", header = TRUE)
+dim(diamonds)
+head(diamonds)
+
+diamonds$cut <- factor(diamonds$cut, levels = c("Fair", "Good", "Very Good",  "Premium", "Ideal"))
+
+# 2) Crie duas tabelas com a função *aggregate*, encontrando os preços médio e mediano dos diamantes de acordo com o tipo de corte. O que esta tabela nos sugere? Há algo contra-intuitivo nela?
+
+diamonds %>%
+  group_by(cut) %>%
+  summarise(media = mean(price), mediana = median(price))
+
+# 3) Vamos investigar melhor esta relação entre preço e tipo de corte. Primeiro, crie a variável qualitativa quilates, através do comando
+#
+# quilates <- cut(diamonds$carat, c(0, 1, 2, 3, 4, 6))
+#
+# Faça o boxplot do preço dos diamantes separados por intervalo de quilates. Que tendências são possíveis perceber neste gráfico?
+
+diamonds <-
+  diamonds %>%
+  mutate(quilates = cut(carat, c(0, 1, 2, 3, 4, 6)))
+
+ggplot(diamonds, aes(x = quilates, y = price)) +
+  geom_boxplot() +
+  labs(x = "Quilates", y = "Preço (US$)", title = "Preço dos Diamantes de Acordo com seu Tamanho em Quilates")
+
+# 4) Crie uma tabela de dupla entrada relacionando a nova variável *quilates* e a variável *cut*. Comente o resultado obtido (não descreva o resultado numérico da tabela, mas sim um resultado qualitativo sobre ela, juntando informações sobre a qualidade do corte do diamante e seu tamanho).
+
+diamonds %>%
+  group_by(quilates, cut) %>%
+  count() %>%
+  pivot_wider(names_from = "quilates", values_from = "n")
+
+# 5) Faça um boxplot separando o preço dos diamantes de acordo com seus níveis de transparência. É possível concluir que diamantes  com transparências melhores são mais caros? Justifique.
+
+ggplot(diamonds, aes(x = clarity, y = price)) +
+  geom_boxplot() +
+  labs(x = "Transparência", y = "Preço (US$)", title = "Preço do Diamante de acordo com sua Transparência")
+
+# 6) Faça um gráfico de dispersão do preço versus o tamanho do diamante (i.e., coloque o preço no eixo y). O que este gráfico nos sugere?
+
+ggplot(diamonds, aes(x = carat, y = price)) +
+  geom_point() +
+  labs(x = "Tamanho (quilates)", y = "Preço (US$)", title = "Preço versus Tamanho de Diamantes")
+
+# 7) Utilize o parâmetro *col = rgb(0, 0, 0, 0.1)* no comando anterior para melhorar a visualização dos dados. Que padrão é possível detectar nos dados? Qual seria uma possível explicação para isto?
+
+ggplot(diamonds, aes(x = carat, y = price)) +
+  geom_point(alpha = 0.1) +
+  labs(x = "Tamanho (quilates)", y = "Preço (US$)", title = "Preço versus Tamanho de Diamantes")
+
+# 8) Vamos tentar melhorar o gráfico ainda mais. Pinte cada ponto do gráfico de uma cor diferente, de acordo com a coluna *color* do banco de dados. O que é possível perceber agora?
+#
+# Dica: utilize a função *as.numeric* e o argumento *pch = 16* para resolver este exercício.
+
+ggplot(diamonds, aes(x = carat, y = price, colour = color)) +
+  geom_point() +
+  labs(x = "Tamanho (quilates)", y = "Preço (US$)", title = "Preço versus Tamanho de Diamantes", colour = "Cor do\nDiamante")
+
+# 9) Adicione uma legenda ao gráfico do item anterior, identificando cada cor plotada, de acordo com a convenção adotada no banco de dados.
+
+ggplot(diamonds, aes(x = carat, y = price, colour = color)) +
+  geom_point() +
+  labs(x = "Tamanho (quilates)", y = "Preço (US$)", title = "Preço versus Tamanho de Diamantes", colour = "Cor do\nDiamante")
+
+# 10) Refaça o gráfico acima utilizando *cut* em vez de *color* para colorir os pontos do gráfico. O que é possível perceber?
+
+ggplot(diamonds, aes(x = carat, y = price, colour = cut)) +
+  geom_point() +
+  labs(x = "Tamanho (quilates)", y = "Preço (US$)", title = "Preço versus Tamanho de Diamantes", colour = "Corte do\nDiamante")
+
+
+

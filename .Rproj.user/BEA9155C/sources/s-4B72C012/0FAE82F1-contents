@@ -1,0 +1,33 @@
+#Pacotes
+library(dplyr)
+library(ggplot2)
+library(forcats)
+
+# Vetores
+Fase <- c(rep(c("A"), 15), rep(c("T"), 15))
+Outcome<- c(rep(c("Dep", "Axy", "Tes"), 2))
+Score <- c(rep(c("Normal", "Mild", "Moderate", "Severe", "Extremely severe"), 6))
+Prev <- c(12, 23, 24, 41, 56, 6.0, 8.9, 54, 23, 24.5, 12, 23, 24, 41, 56, 6.0, 8.9, 54, 23, 24.5, 12, 23, 24, 41, 56, 6.0, 8.9, 54, 23, 24.5)
+low = c(9, 17, 21, 38, 53, 2.7, 6, 50, 16, 20.7, 9, 19, 20, 39, 52, 3.5, 6.7, 48, 18, 22, 8.9, 15, 19.7, 38, 50, 4, 7, 52, 21, 21.9)
+high = c(16, 25, 27, 45, 59, 7.8, 10, 59, 27, 27.3, 16, 27, 26, 43, 59, 9, 11, 58, 25, 29, 17, 25.5, 27, 44, 58, 8.5, 10.8, 57, 25.6, 26.7)
+df <- data.frame(Fase = as.factor(Fase), Outcome = factor(Outcome), Score = as.factor(Score), Prev, low, high)
+
+#Ordem desejada para fatores
+ordem_score <- c("Normal", "Mild", "Moderate", "Severe", "Extremely severe")
+ordem_outcome <- c("Dep", "Axy", "Tes")
+
+#Gráfico
+df %>% 
+  #mutate(
+  #  Score = fct_relevel(Score,ordem_score),
+  #  Outcome = fct_relevel(Outcome,ordem_outcome)
+  #) %>% 
+  ggplot(aes(x=fct_reorder(Outcome, Prev), y=Prev, fill=Score)) +
+  geom_bar(stat = "identity", position = "dodge", width = .8, color="black") +
+  geom_errorbar(aes(ymin= low, ymax= high), width = 0.3,
+                position= position_dodge(width=.8)) +
+  scale_fill_grey(start = .4, end = .9) +
+  theme(plot.title = element_text(face = "bold", hjust = 0.6, size = 14, color = "red")) +
+  ggtitle("") +
+  geom_text(label=round(Prev, 2), position= position_dodge(width=.8), vjust= -.20) +
+  facet_wrap(~Fase)
