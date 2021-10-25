@@ -6,7 +6,7 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, warning = FALSE)
 
 # fonte: https://www.kaggle.com/adityadesai13/used-car-dataset-ford-and-mercedes
 
@@ -19,7 +19,7 @@ registerDoParallel(cl)
 
 # Introdução
 
-Neste tutorial iremos comparar o desempenho da regressão linear e das random forests na predição de preços de automóveis usados fabricados pela Volkswagen e disponíveis no Reino Unido. Para isso, utilizaremos o conjunto de dados [100,000 UK Used Car Data set](https://www.kaggle.com/adityadesai13/used-car-dataset-ford-and-mercedes).
+Neste tutorial iremos comparar o desempenho da regressão linear e das random forests na predição de preços de automóveis usados fabricados pela Volkswagen e disponíveis no Reino Unido. Para isso, utilizaremos o conjunto de dados [100,000 UK Used Car Data set](https://www.kaggle.com/adityadesai13/used-car-dataset-ford-and-mercedes). Todos os arquivos utilizados nesta análise podem ser baixados no [github](https://github.com/mnunes/carros-usados), inclusive os conjuntos de dados.
 
 # EDA
 
@@ -190,7 +190,7 @@ vw_teste  <- testing(vw_split)
 
 ### Pré-Processamento das Variáveis Preditoras
 
-Com os dados limpos e separados em treinamento e teste, o próximo passo para a análise é pré-processar as variáveis. São dois os passos que serão executados a partir de agora. O primeiro é a criação de variáveis dummy. Estas variáveis permitem que dados qualitativos sejam analisados em um contexto de regressão. Basicamente transformamos dados categóricos em numericos. Para isso, utilizaremos a biblioteca `onehot`.
+Com os dados limpos e separados em treinamento e teste, o próximo passo para a análise é pré-processar as variáveis. São dois os passos que serão executados a partir de agora. O primeiro é a criação de variáveis dummy. Estas variáveis permitem que dados qualitativos sejam analisados em um contexto de regressão. Basicamente transformamos dados categóricos em numéricos.
 
 O segundo passo é centrar e escalar as variáveis preditoras. Isto é, deixá-las todas com média 0 e desvio padrão 1. Este passo ajuda na convergência dos algoritmos que utilizaremos para nossa modelagem. 
 
@@ -299,7 +299,13 @@ resultado <-
 metrics(resultado, 
         truth = price, 
         estimate = predicao_lm)
+```
 
+Comparando as métricas obtidas no conjunto de treino com o conjunto de teste, é possível dizer que não há sobreajuste, dado que os resultados estão muito próximos. 
+
+Ao comparar os valores preditos pelo modelo com os que estavam no conjunto teste, obtemos o gráfico a seguir.
+
+```{r}
 # grafico final
 
 ggplot(resultado, aes(x = price, y = predicao_lm)) +
@@ -430,7 +436,7 @@ metrics(resultado,
         estimate = predicao_lm)
 ```
 
-Como podemos ver, o RMSE para o random forest ficou em `r `metrics(resultado_rf, truth = price, estimate = predicao_rf) %>% .[1,3]`, bem abaixo dos `r metrics(resultado, truth = price, estimate = predicao_lm) %>% .[1,3]` obtidos pela regressão linear. O mesmo vale para o $R^2$ do random forest, bem acima daquele obtido pela regressão linear.
+Como podemos ver, o RMSE no conjunto de teste para o random forest ficou em `r round(metrics(resultado_rf, truth = price, estimate = predicao_rf) %>% .[1,3], digits = 0)` (`r round(sqrt(2657390), digits = 0)` no conjunto de treino, indicando que não houve sobreajuste), bem abaixo dos `r round(metrics(resultado, truth = price, estimate = predicao_lm) %>% .[1,3], digits = 0)` obtidos pela regressão linear. O mesmo vale para o $R^2$ do random forest, bem acima daquele obtido pela regressão linear.
 
 Ao comparar graficamente os valores preditos pelo modelo com aqueles disponíveis no conjunto de teste, temos um resultado muito bom e, como era de se supor, bastante superior ao da regressão linear. A variância destes dados está muito menor, indicando que o ajuste foi muito bem feito.
 
@@ -466,5 +472,5 @@ Utilizar o `tidymodels` para ajustar modelos aos nossos dados é bastante simple
 
 Fica a cargo do leitor ajustar modelos para os outros fabricantes de automóveis disponíveis neste conjunto de dados.
 
-
+Todos os arquivos utilizados podem ser baixados no [github](https://github.com/mnunes/carros-usados).
 
